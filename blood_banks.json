@@ -1,0 +1,26 @@
+[
+    {
+        "name": "City Blood Bank",
+        "location": "Saddar",
+        "contact": "0301-1234567",
+        "email": "citybloodbank@gmail.com",
+        "available_blood_groups": ["A+", "A-", "B+", "O+", "O-", "AB+"],
+        "coordinates": [24.8607, 67.0011]
+    },
+    {
+        "name": "LifeSaver Blood Center",
+        "location": "Gulshan-e-Iqbal",
+        "contact": "0302-2345678",
+        "email": "lifesaverbb@gmail.com",
+        "available_blood_groups": ["A+", "B+", "O+", "AB+", "B-", "AB-"],
+        "coordinates": [24.9262, 67.0927]
+    },
+    {
+        "name": "Karachi Central Blood Bank",
+        "location": "North Nazimabad",
+        "contact": "0303-3456789",
+        "email": "kcentralbb@gmail.com",
+        "available_blood_groups": ["A-", "B-", "O-", "AB+", "AB-", "O+"],
+        "coordinates": [24.9424, 67.0652]
+    }
+]

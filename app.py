@@ -1,3 +1,9 @@
+import streamlit as st
+import json
+from geopy.distance import geodesic
+import os
+
+# Set page configuration
 st.set_page_config(
     page_title="Karachi Blood Bank Finder",
     page_icon="🩸",
@@ -5,60 +11,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Background Image
-page_bg = """
+# Inject custom CSS for background image
+background_path = os.path.join(os.path.dirname(__file__), "images", "background.jpg")
+page_bg = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-    background-image: url("images/background.jpg");
+    background-image: url("file://{background_path}");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    background-attachment: fixed;
+}}
+[data-testid="stSidebar"] {{
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
 }}
 </style>
 """
 st.markdown(page_bg, unsafe_allow_html=True)
-
-import json
-import streamlit as st
-from geopy.distance import geodesic
 
 # Load Blood Bank Data
 with open('blood_banks.json', 'r') as f:
     blood_banks = json.load(f)
-
-# Page Configurations
-st.set_page_config(
-    page_title="Karachi Blood Bank Finder",
-    page_icon="🩸",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Custom CSS for Background Image
-page_bg = """
-<style>
-[data-testid="stAppViewContainer"] {{
-    background-image: url("images/background.jpg");
-    background-size: cover;
-    background-position: center;
-}}
-</style>
-"""
-st.markdown(page_bg, unsafe_allow_html=True)
-
-# App Title
-st.title("🩸 Karachi Blood Bank Finder")
-
-# Input Form
-st.sidebar.header("Find Nearest Blood Bank")
-user_location = st.sidebar.selectbox(
-    "Select Your Location",
-    ["Saddar", "Gulshan-e-Iqbal", "North Nazimabad", "Korangi", "Clifton", "Gulistan-e-Johar", "Malir", "Nazimabad", "Stadium Road", "Jamshed Town"]
-)
-required_blood_group = st.sidebar.selectbox(
-    "Select Required Blood Group",
-    ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
-)
 
 # Karachi Locations Coordinates
 locations = {
@@ -74,36 +48,60 @@ locations = {
     "Jamshed Town": (24.8785, 67.0431)
 }
 
-# User's Selected Coordinates
-user_coords = locations[user_location]
+# App Title
+st.title("🩸 Karachi Blood Bank Finder")
+st.write("Find the nearest blood bank with the required blood group in Karachi.")
 
-# Find Nearest Blood Bank
-def find_nearest_blood_bank(user_coords, required_blood_group):
-    nearby_blood_banks = [
-        bank for bank in blood_banks if required_blood_group in bank['available_blood_groups']
-    ]
-    for bank in nearby_blood_banks:
-        bank['distance'] = geodesic(user_coords, tuple(bank['coordinates'])).km
-    sorted_blood_banks = sorted(nearby_blood_banks, key=lambda x: x['distance'])
-    return sorted_blood_banks
+# Sidebar Inputs
+st.sidebar.header("Search Blood Banks")
+user_location = st.sidebar.selectbox(
+    "Select Your Location",
+    list(locations.keys())
+)
+required_blood_group = st.sidebar.selectbox(
+    "Select Required Blood Group",
+    ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
+)
 
-nearest_blood_banks = find_nearest_blood_bank(user_coords, required_blood_group)
+# Interactive Buttons
+if st.sidebar.button("Search"):
+    # Find Nearest Blood Banks
+    user_coords = locations[user_location]
 
-# Display Results
-if nearest_blood_banks:
+    def find_nearest_blood_bank(user_coords, required_blood_group):
+        nearby_blood_banks = [
+            bank for bank in blood_banks if required_blood_group in bank['available_blood_groups']
+        ]
+        for bank in nearby_blood_banks:
+            bank['distance'] = geodesic(user_coords, tuple(bank['coordinates'])).km
+        sorted_blood_banks = sorted(nearby_blood_banks, key=lambda x: x['distance'])
+        return sorted_blood_banks
+
+    nearest_blood_banks = find_nearest_blood_bank(user_coords, required_blood_group)
+
+    # Display Results
     st.subheader("Nearest Blood Banks")
-    for bank in nearest_blood_banks:
-        st.markdown(f"""
-        - **Name:** {bank['name']}
-        - **Location:** {bank['location']}
-        - **Contact:** {bank['contact']}
-        - **Email:** {bank['email']}
-        - **Available Blood Groups:** {", ".join(bank['available_blood_groups'])}
-        - **Distance:** {bank['distance']:.2f} km
-        """)
+    if nearest_blood_banks:
+        for idx, bank in enumerate(nearest_blood_banks):
+            with st.expander(f"{idx + 1}. {bank['name']} ({bank['distance']:.2f} km away)"):
+                st.markdown(f"""
+                - **Name:** {bank['name']}
+                - **Location:** {bank['location']}
+                - **Contact:** {bank['contact']}
+                - **Email:** {bank['email']}
+                - **Available Blood Groups:** {", ".join(bank['available_blood_groups'])}
+                - **Distance:** {bank['distance']:.2f} km
+                """)
+    else:
+        st.error("No blood banks found with the required blood group.")
 else:
-    st.error("No blood banks found with the required blood group.")
+    st.info("Please click 'Search' to find nearby blood banks.")
+
+# Clear Button
+if st.sidebar.button("Clear"):
+    st.sidebar.empty()
+    st.sidebar.success("Cleared search inputs. Ready for a new search!")
 
 # Footer
 st.markdown("---")
-st.caption("Developed by Karachi Blood Bank Finder Team.")
+st.caption("Developed with ❤️ by Karachi Blood Bank Finder Team.")

@@ -1,3 +1,23 @@
+st.set_page_config(
+    page_title="Karachi Blood Bank Finder",
+    page_icon="🩸",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for Background Image
+page_bg = """
+<style>
+[data-testid="stAppViewContainer"] {{
+    background-image: url("images/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}}
+</style>
+"""
+st.markdown(page_bg, unsafe_allow_html=True)
+
 import json
 import streamlit as st
 from geopy.distance import geodesic
